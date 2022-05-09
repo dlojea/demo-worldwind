@@ -25,12 +25,12 @@ public class Vista {
  	    	String[] yaw = actitudArray[1].split("=");
  	    	String[] roll = actitudArray[2].split("=");
  	    	
- 	    	this.yaw = Angle.fromDegrees(Double.parseDouble(yaw[1]));
- 	    	//Creo que worldwind define 0 como hacia abajo mientras que en el simulador 0 es paralelo al plano, le añado 90° por ahora
- 	    	this.pitch = Angle.fromDegrees(Double.parseDouble(pitch[1]) + 90);
- 	    	this.roll = Angle.fromDegrees(Double.parseDouble(roll[1]));
+ 	    	this.yaw = Angle.fromRadians(Double.parseDouble(yaw[1]));
+ 	    	//Creo que worldwind define 0 como hacia abajo mientras que en el simulador 0 es paralelo al plano, le aÃ±ado 90Âº por ahora
+ 	    	this.pitch = Angle.fromRadians(Double.parseDouble(pitch[1]) + 1.5708);
+ 	    	this.roll = Angle.fromRadians(Double.parseDouble(roll[1]));
  	    	
- 	    	String lsg = json.getString("Localización Sistema Global");
+ 	    	String lsg = json.getString("LocalizaciÃ³n Sistema Global");
  	    	String[] lsgArray = lsg.split(",");
  	    	String[] latitud = lsgArray[0].split("=");
  	    	String[] longitud = lsgArray[1].split("=");
@@ -57,4 +57,5 @@ public class Vista {
  		public Angle getRoll() {
  			return roll;
  		}
+
  	}
