@@ -17,8 +17,7 @@ public class TimerTaskGetData extends TimerTask{
 			this.appFrame = appFrame;
 			this.socket = new Socket("localhost", 20064);
 			this.input = socket.getInputStream();
-		}
-		catch (Exception e) {}
+		} catch (Exception e) {}
 	}
 
 	@Override
@@ -47,8 +46,8 @@ public class TimerTaskGetData extends TimerTask{
 	       	   	    + "        \"Localización Sistema Global\": \"LocationGlobal:lat="+this.lat+",lon=-8.794522,alt=361.61\",\r\n"
 	       	  	    + "        \"Localización Sistema Global Relativo a Home\": \"LocationGlobalRelative:lat=42.2905979,lon=-8.794522,alt=145.499\",\r\n"
 	          	    + "        \"Localización Sistema Local\": \"LocationLocal:north=797.6734008789062,east=-439.1247253417969,down=-145.49925231933594\",\r\n"
-	                    + "        \"Tiempo\": \"2022-04-01 10:01:47.266832\"\r\n"
-	                    + "    }");
+                    + "        \"Tiempo\": \"2022-04-01 10:01:47.266832\"\r\n"
+                    + "    }");
 			*/
 	
 	 		Vista v = new Vista(json);
@@ -56,7 +55,7 @@ public class TimerTaskGetData extends TimerTask{
 	 		appFrame.updateView(v);
 
 	    } catch (Exception exception) {
-			System.out.println("\nERROR: "+exception.getMessage());
+			System.out.println("\nERROR: " + exception.getMessage());
 		}
 	}
 }

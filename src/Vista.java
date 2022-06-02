@@ -11,6 +11,8 @@ public class Vista {
  		private Angle pitch; //inclinacion
  		private Angle roll; //rotacion
  		
+ 		private double posicionCamara;
+ 		
  		public Vista(Position position, Angle yaw, Angle pitch, Angle roll) {
  			this.position = position; 
  			this.yaw = yaw;
@@ -21,25 +23,25 @@ public class Vista {
  		public Vista(JSONObject json) throws JSONException {
  			String actitud = json.getString("Actitud");
  	    	String[] actitudArray = actitud.split(",");
- 	    	String[] pitch = actitudArray[0].split("=");
- 	    	String[] yaw = actitudArray[1].split("=");
- 	    	String[] roll = actitudArray[2].split("=");
+ 	    	String pitch = actitudArray[0].split("=")[1];
+ 	    	String yaw = actitudArray[1].split("=")[1];
+ 	    	String roll = actitudArray[2].split("=")[1];
  	    	
- 	    	this.yaw = Angle.fromRadians(Double.parseDouble(yaw[1]));
- 	    	//Creo que worldwind define 0 como hacia abajo mientras que en el simulador 0 es paralelo al plano, le añado 90º por ahora
- 	    	this.pitch = Angle.fromRadians(Double.parseDouble(pitch[1]) + 1.5708);
- 	    	this.roll = Angle.fromRadians(Double.parseDouble(roll[1]));
+ 	    	this.yaw = Angle.fromRadians(Double.parseDouble(yaw));
+ 	    	this.pitch = Angle.fromRadians(Double.parseDouble(pitch) + Math.toRadians(this.posicionCamara));
+ 	    	this.roll = Angle.fromRadians(Double.parseDouble(roll));
  	    	
  	    	String lsg = json.getString("Localización Sistema Global");
  	    	String[] lsgArray = lsg.split(",");
- 	    	String[] latitud = lsgArray[0].split("=");
- 	    	String[] longitud = lsgArray[1].split("=");
- 	    	String[] altitud = lsgArray[2].split("=");
+ 	    	String latitud = lsgArray[0].split("=")[1];
+ 	    	String longitud = lsgArray[1].split("=")[1];
+ 	    	String altitud = lsgArray[2].split("=")[1];
  	    	
- 	    	this.position = new Position(new LatLon(
- 	    			Angle.fromDegrees(Double.parseDouble(latitud[1])), 
- 	    			Angle.fromDegrees(Double.parseDouble(longitud[1]))),
- 	    			Double.parseDouble(altitud[1]));
+ 	    	this.position = new Position(
+ 	    		new LatLon(
+    				Angle.fromDegrees(Double.parseDouble(latitud)), 
+    				Angle.fromDegrees(Double.parseDouble(longitud))),
+				Double.parseDouble(altitud));
  		}
 
  		public Position getPosition() {
@@ -56,6 +58,10 @@ public class Vista {
 
  		public Angle getRoll() {
  			return roll;
+ 		}
+ 		
+ 		public void setPosicionCamara(double posicionCamara) {
+ 			this.posicionCamara = posicionCamara;
  		}
 
  	}

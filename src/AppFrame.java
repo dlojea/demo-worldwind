@@ -1,27 +1,28 @@
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.util.Timer;
 
 import javax.swing.BorderFactory;
+import javax.swing.ButtonGroup;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JDesktopPane;
 import javax.swing.JFrame;
 import javax.swing.JLayeredPane;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JSlider;
-import javax.swing.MenuSelectionManager;
+import javax.swing.JTextField;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import gov.nasa.worldwind.BasicModel;
 import gov.nasa.worldwind.WorldWindow;
@@ -41,6 +42,8 @@ public class AppFrame extends JFrame {
 	private WorldWindow wwd;
     private LayerPanel layerPanel;
     private JDesktopPane desktop;
+    
+    private double posicionCamara = 0;
 
     public AppFrame() {
         this.initialize();
@@ -49,12 +52,7 @@ public class AppFrame extends JFrame {
     private void initialize() {
     	this.desktop = new JDesktopPane();
     	this.getContentPane().add(desktop, BorderLayout.CENTER);
-		try {
-			this.initializeWW();
-		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		this.initializeWW();
 		
         this.layerPanel = new LayerPanel(this.wwd);
         this.dibujarLineasDeNivel();
@@ -64,10 +62,22 @@ public class AppFrame extends JFrame {
         statusBar.setEventSource(this.wwd);
         
         JMenuBar menubar = new JMenuBar();
-		JMenu menu = new JMenu("Capas");
-		menu.add(this.layerPanel);
-		layerPanel.setFocusable(true);
-		menubar.add(menu);
+        
+		JMenu menuCapas = new JMenu("Capas");
+		menuCapas.add(this.layerPanel);
+		menubar.add(menuCapas);
+		
+		JMenu menuOpciones = new JMenu("Opciones");
+		JMenuItem itemAngulo = new JMenuItem("Cambiar ángulo de la cámara");
+		menuOpciones.add(itemAngulo);
+		itemAngulo.addActionListener(new ActionListener() {
+	        @Override
+	        public void actionPerformed(ActionEvent e) {
+	        	mostrarOpciones();	        	
+	        }
+	    });
+		menubar.add(menuOpciones);
+		
 		this.setJMenuBar(menubar);
         
         JPanel panel = new JPanel();
@@ -76,9 +86,12 @@ public class AppFrame extends JFrame {
 		panel.add(this.panelTransparencia());
 		
 		this.desktop.add(panel, JLayeredPane.MODAL_LAYER);
+
+        //Timer timer = new Timer();
+		//timer.scheduleAtFixedRate(new TimerTaskGetData(this), 0, 33);
     }
     
-    private void initializeWW() throws JSONException {
+    private void initializeWW() {
     	this.wwd = new WorldWindowGLJPanel();
 		this.wwd.setModel(new BasicModel());
 
@@ -96,19 +109,19 @@ public class AppFrame extends JFrame {
 		BasicFlyView flyView = new BasicFlyView();
         this.wwd.setView(flyView);
         
-        Timer timer = new Timer();
-		timer.scheduleAtFixedRate(new TimerTaskGetData(this), 0, 33);
     }
     
     public void updateView(Vista v) {
-    	BasicFlyView view = (BasicFlyView) wwd.getView();
+    	BasicFlyView view = (BasicFlyView) this.wwd.getView();
+    	
+    	v.setPosicionCamara(this.posicionCamara);
         
         view.setEyePosition(v.getPosition());
         view.setHeading(v.getYaw());
         view.setPitch(v.getPitch());
         view.setRoll(v.getRoll());
         
-        wwd.redraw();
+        this.wwd.redraw();
     }
     
     private void dibujarLineasDeNivel() {
@@ -116,10 +129,12 @@ public class AppFrame extends JFrame {
         layer.setName("Curvas de nivel");
         layer.setPickEnabled(false);
         layer.setMaxActiveAltitude(3000);
+        
+        this.wwd.getModel().getLayers().add(layer);
 
-        insertBeforeLayerName(this.wwd, layer, "Brújula");
+        //insertBeforeLayerName(this.wwd, layer, "Brújula");
 
-        for (int elevation = 0; elevation <= 3000; elevation += 50) {
+        for (int elevation = 0; elevation <= 3000; elevation += 25) {
             ContourLine cl = new ContourLine(elevation);
             cl.setColor(new Color(1f, 1f, 1f));
 
@@ -135,8 +150,8 @@ public class AppFrame extends JFrame {
          controlPanel.setBorder(new CompoundBorder(BorderFactory.createEmptyBorder(9, 9, 9, 9), tb));
          controlPanel.setBackground(new Color(0,0,0,.0f));
          
-         final JSlider slider = new JSlider(0, 100, 100);
-         slider.setBackground(getForeground());
+         JSlider slider = new JSlider(0, 100, 100);
+         slider.setBackground(getForeground()); 
          slider.addChangeListener((ChangeEvent event) -> {
         	 this.wwd.getModel().getLayers().getLayerByName("Imagen detallada").setOpacity((double) slider.getValue()/100);
         	 this.wwd.redraw();
@@ -144,6 +159,27 @@ public class AppFrame extends JFrame {
          
          controlPanel.add(slider);
          return controlPanel;
+    }
+    
+    private void mostrarOpciones() {
+    	JFrame frame = new OpcionesFrame(this);
+    	frame.setTitle("Opciones");
+        frame.setSize(300, 150);
+        frame.setLocationRelativeTo(null);
+        
+        java.awt.EventQueue.invokeLater(new Runnable() {
+			public void run() {
+				frame.setVisible(true);
+			}
+        });
+    }
+    
+    public double getPosicionCamara() {
+    	return this.posicionCamara;
+    }
+    
+    public void setPosicionCamara(double posicionCamara) {
+    	this.posicionCamara = posicionCamara;
     }
     
     public void insertBeforeCompass(WorldWindow wwd, Layer layer) {
