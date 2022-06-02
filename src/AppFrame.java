@@ -87,8 +87,8 @@ public class AppFrame extends JFrame {
 		
 		this.desktop.add(panel, JLayeredPane.MODAL_LAYER);
 
-        //Timer timer = new Timer();
-		//timer.scheduleAtFixedRate(new TimerTaskGetData(this), 0, 33);
+        Timer timer = new Timer();
+		timer.scheduleAtFixedRate(new TimerTaskGetData(this), 0, 33);
     }
     
     private void initializeWW() {
