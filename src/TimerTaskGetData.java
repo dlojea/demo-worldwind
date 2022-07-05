@@ -49,8 +49,8 @@ public class TimerTaskGetData extends TimerTask{
                     + "        \"Tiempo\": \"2022-04-01 10:01:47.266832\"\r\n"
                     + "    }");
 			*/
-	
-	 		Vista v = new Vista(json);
+			
+			Vista v = new Vista(json, this.appFrame.getPosicionCamara());
 	
 	 		appFrame.updateView(v);
 

@@ -43,9 +43,10 @@ public class AppFrame extends JFrame {
     private LayerPanel layerPanel;
     private JDesktopPane desktop;
     
-    private double posicionCamara = 0;
+    private double posicionCamara;;
 
     public AppFrame() {
+    	this.posicionCamara = 0;
         this.initialize();
     }
 
@@ -113,8 +114,6 @@ public class AppFrame extends JFrame {
     
     public void updateView(Vista v) {
     	BasicFlyView view = (BasicFlyView) this.wwd.getView();
-    	
-    	v.setPosicionCamara(this.posicionCamara);
         
         view.setEyePosition(v.getPosition());
         view.setHeading(v.getYaw());

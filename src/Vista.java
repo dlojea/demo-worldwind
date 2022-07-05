@@ -13,14 +13,17 @@ public class Vista {
  		
  		private double posicionCamara;
  		
- 		public Vista(Position position, Angle yaw, Angle pitch, Angle roll) {
+ 		public Vista(Position position, Angle yaw, Angle pitch, Angle roll, double posicionCamara) {
  			this.position = position; 
  			this.yaw = yaw;
  			this.pitch = pitch;
  			this.roll = roll;
+ 			this.posicionCamara = posicionCamara;
  		}
  		
- 		public Vista(JSONObject json) throws JSONException {
+ 		public Vista(JSONObject json, double posicionCamara) throws JSONException {
+ 			this.posicionCamara = posicionCamara;
+ 			
  			String actitud = json.getString("Actitud");
  	    	String[] actitudArray = actitud.split(",");
  	    	String pitch = actitudArray[0].split("=")[1];
@@ -58,10 +61,6 @@ public class Vista {
 
  		public Angle getRoll() {
  			return roll;
- 		}
- 		
- 		public void setPosicionCamara(double posicionCamara) {
- 			this.posicionCamara = posicionCamara;
  		}
 
  	}
