@@ -15,7 +15,7 @@ public class TimerTaskGetData extends TimerTask{
 	public TimerTaskGetData(AppFrame appFrame) {
 		try {
 			this.appFrame = appFrame;
-			this.socket = new Socket("localhost", 20064);
+			this.socket = new Socket("localhost", appFrame.getSocket());
 			this.input = socket.getInputStream();
 		} catch (Exception e) {}
 	}

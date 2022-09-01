@@ -66,8 +66,11 @@ public class AppFrame extends JFrame {
 	private WorldWindow wwd;
     private LayerPanel layerPanel;
     private JDesktopPane desktop;
+    private MapFrame mapFrame;
     
     private double posicionCamara;
+    private int socket = 20064;
+    private Timer timer;
 
     //public JSONObject 
 
@@ -139,8 +142,30 @@ public class AppFrame extends JFrame {
 		
 		this.desktop.add(panel, JLayeredPane.MODAL_LAYER);
 
-        Timer timer = new Timer();
-		timer.scheduleAtFixedRate(new TimerTaskGetData(this), 0, 500);
+        this.mapFrame = mostrarMapa();
+
+        timer = new Timer();
+        timer.scheduleAtFixedRate(new TimerTaskGetData(this), 0, 33);
+        
+        JMenu menuDrones = new JMenu("Cambiar dron");
+        JMenuItem itemDron1 = new JMenuItem("Dron 1");
+        JMenuItem itemDron2 = new JMenuItem("Dron 2");
+        menuDrones.add(itemDron1);
+        menuDrones.add(itemDron2);
+        itemDron1.addActionListener(new ActionListener() {
+	        @Override
+	        public void actionPerformed(ActionEvent e) {
+	        	socket = 20064;
+	        	cambiarDron();
+	        }
+	    });
+        itemDron2.addActionListener(new ActionListener() {
+	        @Override
+	        public void actionPerformed(ActionEvent e) {
+	        	socket = 20065;
+	        	cambiarDron();
+	        }
+	    });
 
         /*
         Timer timer2 = new Timer();
@@ -165,6 +190,21 @@ public class AppFrame extends JFrame {
 		
 		BasicFlyView flyView = new BasicFlyView();
         this.wwd.setView(flyView);
+    }
+
+    private MapFrame mostrarMapa() {
+    	MapFrame frame = new MapFrame();
+    	frame.setTitle("Mapa");
+        frame.setSize(500, 500);
+        frame.setLocationRelativeTo(this);
+        
+        java.awt.EventQueue.invokeLater(new Runnable() {
+			public void run() {
+				frame.setVisible(true);
+			}
+        });
+        
+        return frame;
     }
     
     public void updateView(Vista v) {
@@ -267,6 +307,12 @@ public class AppFrame extends JFrame {
 			}
         });
     }
+
+    private void cambiarDron() {
+    	timer.cancel();
+    	timer = new Timer();
+    	timer.scheduleAtFixedRate(new TimerTaskGetData(this), 0, 33);
+    }
     
     public double getPosicionCamara() {
     	return this.posicionCamara;
@@ -274,6 +320,10 @@ public class AppFrame extends JFrame {
     
     public void setPosicionCamara(double posicionCamara) {
     	this.posicionCamara = posicionCamara;
+    }
+
+    public int getSocket() {
+    	return this.socket;
     }
     
     public void insertBeforeCompass(WorldWindow wwd, Layer layer) {
