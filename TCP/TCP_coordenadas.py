@@ -25,7 +25,7 @@ def TCP_coordenadas(vehicle):
     tiempo.append(datetime.now())
     actitud.append(vehicle.attitude)
     elevacion_terreno = get_elevation(vehicle.location.global_frame.lat, vehicle.location.global_frame.lon)
-    elevacion.append(vehicle.location.global_frame.alt - elevacion_terreno)
+    elevacion.append(vehicle.location.global_frame.alt)
     
     # Empaquetamiento como un Dataframe de pandas
     df = pd.DataFrame(list(zip(tiempo, GPS, loc_global_frame, loc_global_relative_frame, loc_local_frame,actitud, elevacion)),

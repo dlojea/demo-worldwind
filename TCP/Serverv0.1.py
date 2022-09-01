@@ -6,7 +6,7 @@ import pandas as pd
 import json
 
 tiempo_inicio = time()
-frecuencia_refresco = 30
+frecuencia_refresco = 3
 
 class RequestHandler (BaseRequestHandler):
 

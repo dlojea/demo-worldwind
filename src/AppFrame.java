@@ -26,6 +26,7 @@ import javax.swing.event.ChangeEvent;
 
 import gov.nasa.worldwind.BasicModel;
 import gov.nasa.worldwind.WorldWindow;
+import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.awt.WorldWindowGLJPanel;
 import gov.nasa.worldwind.layers.CompassLayer;
 import gov.nasa.worldwind.layers.Layer;
@@ -35,7 +36,30 @@ import gov.nasa.worldwind.layers.placename.PlaceNameLayer;
 import gov.nasa.worldwind.render.ContourLine;
 import gov.nasa.worldwind.util.StatusBar;
 import gov.nasa.worldwind.view.firstperson.BasicFlyView;
+import gov.nasa.worldwind.view.firstperson.FlyToFlyViewAnimator;
 import gov.nasa.worldwindx.examples.LayerPanel;
+import gov.nasa.worldwind.avlist.AVKey;
+import gov.nasa.worldwind.util.PropertyAccessor;
+import gov.nasa.worldwind.globes.Globe;
+import gov.nasa.worldwind.geom.LatLon;
+import gov.nasa.worldwind.view.firstperson.FlyToFlyViewAnimator.FlyToElevationAnimator;
+import gov.nasa.worldwind.animation.Animator;
+import java.util.List;
+import java.util.LinkedList;
+import gov.nasa.worldwind.animation.DoubleAnimator;
+import gov.nasa.worldwind.animation.SmoothInterpolator;
+import gov.nasa.worldwind.animation.ScheduledInterpolator;
+import gov.nasa.worldwind.animation.MoveToDoubleAnimator;
+import gov.nasa.worldwind.animation.MoveToPositionAnimator;
+import gov.nasa.worldwind.animation.AngleAnimator;
+import gov.nasa.worldwind.animation.RotateToAngleAnimator;
+
+import org.json.JSONObject;
+
+import com.github.sarxos.webcam.Webcam;
+import com.github.sarxos.webcam.WebcamPanel;
+import com.github.sarxos.webcam.WebcamResolution;
+
 
 public class AppFrame extends JFrame {
 
@@ -43,14 +67,41 @@ public class AppFrame extends JFrame {
     private LayerPanel layerPanel;
     private JDesktopPane desktop;
     
-    private double posicionCamara;;
+    private double posicionCamara;
+
+    //public JSONObject 
 
     public AppFrame() {
-    	this.posicionCamara = 0;
+        this.posicionCamara = 0;
         this.initialize();
     }
 
     private void initialize() {
+
+        /*
+        // WEBCAM TEST
+        for (Webcam webcam : Webcam.getWebcams()) {
+			System.out.println("Webcam detected: " + webcam.getName());
+		}
+
+        Webcam webcam = Webcam.getWebcams().get(0);
+
+        webcam.setViewSize(WebcamResolution.VGA.getSize());
+
+		WebcamPanel panelwc = new WebcamPanel(webcam);
+		panelwc.setFPSDisplayed(true);
+		panelwc.setDisplayDebugInfo(true);
+		panelwc.setImageSizeDisplayed(true);
+		panelwc.setMirrored(true);
+
+		JFrame window = new JFrame("Test webcam panel");
+		window.add(panelwc);
+		window.setResizable(true);
+		window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		window.pack();
+		window.setVisible(true);
+        */
+
     	this.desktop = new JDesktopPane();
     	this.getContentPane().add(desktop, BorderLayout.CENTER);
 		this.initializeWW();
@@ -69,7 +120,7 @@ public class AppFrame extends JFrame {
 		menubar.add(menuCapas);
 		
 		JMenu menuOpciones = new JMenu("Opciones");
-		JMenuItem itemAngulo = new JMenuItem("Cambiar ángulo de la cámara");
+		JMenuItem itemAngulo = new JMenuItem("Cambiar ï¿½ngulo de la cï¿½mara");
 		menuOpciones.add(itemAngulo);
 		itemAngulo.addActionListener(new ActionListener() {
 	        @Override
@@ -89,7 +140,12 @@ public class AppFrame extends JFrame {
 		this.desktop.add(panel, JLayeredPane.MODAL_LAYER);
 
         Timer timer = new Timer();
-		timer.scheduleAtFixedRate(new TimerTaskGetData(this), 0, 33);
+		timer.scheduleAtFixedRate(new TimerTaskGetData(this), 0, 500);
+
+        /*
+        Timer timer2 = new Timer();
+		timer2.scheduleAtFixedRate(new TimerTaskUpdateView(this), 0, 33);
+        */
     }
     
     private void initializeWW() {
@@ -109,16 +165,55 @@ public class AppFrame extends JFrame {
 		
 		BasicFlyView flyView = new BasicFlyView();
         this.wwd.setView(flyView);
-        
     }
     
     public void updateView(Vista v) {
     	BasicFlyView view = (BasicFlyView) this.wwd.getView();
+    	
+        /*
+    	v.setPosicionCamara(this.posicionCamara);
         
         view.setEyePosition(v.getPosition());
         view.setHeading(v.getYaw());
         view.setPitch(v.getPitch());
         view.setRoll(v.getRoll());
+        */
+
+        // SISTEMA DE INTERPOLACIÃ“N CON ANIMATOR
+        FlyToFlyViewAnimator animator =
+                        FlyToFlyViewAnimator.createFlyToFlyViewAnimator(view,
+                            view.getEyePosition(), v.getPosition(),
+                            view.getHeading(), v.getYaw(),
+                            view.getPitch(), v.getPitch(),
+                            view.getRoll(), v.getRoll(),
+                            view.getEyePosition().getElevation(), v.getPosition().getElevation(),
+                            500, WorldWind.ABSOLUTE);
+        
+        List<Animator> animators = new LinkedList<Animator>();
+
+        for (Animator anim : animator.getAnimators()) {
+            if (anim instanceof FlyToFlyViewAnimator.FlyToElevationAnimator) {
+                FlyToFlyViewAnimator.FlyToElevationAnimator ftfAnim = (FlyToFlyViewAnimator.FlyToElevationAnimator) anim;
+                animators.add(new MoveToDoubleAnimator(ftfAnim.getEnd(), 0.998, ftfAnim.getPropertyAccessor()));
+            }
+            else if (anim instanceof FlyToFlyViewAnimator.OnSurfacePositionAnimator) { 
+                FlyToFlyViewAnimator.OnSurfacePositionAnimator ftfAnim = (FlyToFlyViewAnimator.OnSurfacePositionAnimator) anim;
+                animators.add(new MoveToPositionAnimator(ftfAnim.getBegin(), ftfAnim.getEnd(), 0.998, ftfAnim.getPropertyAccessor()));
+            }
+            else if (anim instanceof AngleAnimator) {
+                AngleAnimator ftfAnim = (AngleAnimator) anim;
+                animators.add(new RotateToAngleAnimator(ftfAnim.getBegin(), ftfAnim.getEnd(), 0.998, ftfAnim.getPropertyAccessor()));
+            }
+            else {
+                animators.add(anim);
+            }
+        }
+
+        animator.setAnimators(animators.toArray(new Animator[animators.size()]));
+
+        view.addAnimator(animator);
+        animator.start();
+        view.firePropertyChange(AVKey.VIEW, null, view);
         
         this.wwd.redraw();
     }
@@ -131,7 +226,7 @@ public class AppFrame extends JFrame {
         
         this.wwd.getModel().getLayers().add(layer);
 
-        //insertBeforeLayerName(this.wwd, layer, "Brújula");
+        //insertBeforeLayerName(this.wwd, layer, "Brï¿½jula");
 
         for (int elevation = 0; elevation <= 3000; elevation += 25) {
             ContourLine cl = new ContourLine(elevation);

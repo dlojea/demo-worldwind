@@ -18,12 +18,12 @@ public class Vista {
  			this.yaw = yaw;
  			this.pitch = pitch;
  			this.roll = roll;
- 			this.posicionCamara = posicionCamara;
+			this.posicionCamara = posicionCamara;
  		}
  		
  		public Vista(JSONObject json, double posicionCamara) throws JSONException {
- 			this.posicionCamara = posicionCamara;
- 			
+			this.posicionCamara = posicionCamara;
+
  			String actitud = json.getString("Actitud");
  	    	String[] actitudArray = actitud.split(",");
  	    	String pitch = actitudArray[0].split("=")[1];
@@ -34,11 +34,12 @@ public class Vista {
  	    	this.pitch = Angle.fromRadians(Double.parseDouble(pitch) + Math.toRadians(this.posicionCamara));
  	    	this.roll = Angle.fromRadians(Double.parseDouble(roll));
  	    	
- 	    	String lsg = json.getString("Localización Sistema Global");
+ 	    	String lsg = json.getString("Localizacion Sistema Global");
  	    	String[] lsgArray = lsg.split(",");
  	    	String latitud = lsgArray[0].split("=")[1];
  	    	String longitud = lsgArray[1].split("=")[1];
- 	    	String altitud = lsgArray[2].split("=")[1];
+ 	    	//String altitud = lsgArray[2].split("=")[1];
+			String altitud = json.getString("Elevacion");
  	    	
  	    	this.position = new Position(
  	    		new LatLon(
@@ -62,5 +63,4 @@ public class Vista {
  		public Angle getRoll() {
  			return roll;
  		}
-
  	}

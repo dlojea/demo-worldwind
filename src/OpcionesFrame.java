@@ -25,14 +25,14 @@ public class OpcionesFrame extends JFrame {
 	private void initialize() {
         JPanel controlPanel = new JPanel();
         
-        TitledBorder tb = new TitledBorder("Ángulo de la cámara");
+        TitledBorder tb = new TitledBorder("ï¿½ngulo de la cï¿½mara");
         tb.setTitleColor(new Color(0,0,0));
         controlPanel.setBorder(new CompoundBorder(BorderFactory.createEmptyBorder(9, 9, 9, 9), tb));
         controlPanel.setBackground(new Color(0,0,0,.0f));
         
         JTextField textAngulo = new JTextField(Double.toString(appFrame.getPosicionCamara()));
         textAngulo.setPreferredSize(new Dimension(200,24));
-        textAngulo.setToolTipText("Introduce el ángulo de la cámara, entre 0 y 90º");
+        textAngulo.setToolTipText("Introduce el ï¿½ngulo de la cï¿½mara, entre 0 y 90ï¿½");
         controlPanel.add(textAngulo);
         
         JButton botonGuardar = new JButton("Guardar");
