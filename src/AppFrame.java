@@ -133,7 +133,6 @@ public class AppFrame extends JFrame {
 	    });
 		menubar.add(menuOpciones);
 		
-		this.setJMenuBar(menubar);
         
         JPanel panel = new JPanel();
 		panel.setBackground(new Color(0,0,0,.0f));
@@ -167,10 +166,9 @@ public class AppFrame extends JFrame {
 	        }
 	    });
 
-        /*
-        Timer timer2 = new Timer();
-		timer2.scheduleAtFixedRate(new TimerTaskUpdateView(this), 0, 33);
-        */
+        menubar.add(menuDrones);
+
+		this.setJMenuBar(menubar);
     }
     
     private void initializeWW() {
