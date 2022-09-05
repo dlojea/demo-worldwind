@@ -253,6 +253,8 @@ public class AppFrame extends JFrame {
         animator.start();
         view.firePropertyChange(AVKey.VIEW, null, view);
         
+        mapFrame.updateMarker(v);
+
         this.wwd.redraw();
     }
     
