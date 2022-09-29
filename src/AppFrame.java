@@ -8,8 +8,6 @@ import java.awt.event.ComponentListener;
 import java.util.Timer;
 
 import javax.swing.BorderFactory;
-import javax.swing.ButtonGroup;
-import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JDesktopPane;
 import javax.swing.JFrame;
 import javax.swing.JLayeredPane;
@@ -17,9 +15,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
-import javax.swing.JRadioButton;
 import javax.swing.JSlider;
-import javax.swing.JTextField;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
@@ -39,26 +35,14 @@ import gov.nasa.worldwind.view.firstperson.BasicFlyView;
 import gov.nasa.worldwind.view.firstperson.FlyToFlyViewAnimator;
 import gov.nasa.worldwindx.examples.LayerPanel;
 import gov.nasa.worldwind.avlist.AVKey;
-import gov.nasa.worldwind.util.PropertyAccessor;
-import gov.nasa.worldwind.globes.Globe;
-import gov.nasa.worldwind.geom.LatLon;
-import gov.nasa.worldwind.view.firstperson.FlyToFlyViewAnimator.FlyToElevationAnimator;
 import gov.nasa.worldwind.animation.Animator;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.LinkedList;
-import gov.nasa.worldwind.animation.DoubleAnimator;
-import gov.nasa.worldwind.animation.SmoothInterpolator;
-import gov.nasa.worldwind.animation.ScheduledInterpolator;
 import gov.nasa.worldwind.animation.MoveToDoubleAnimator;
 import gov.nasa.worldwind.animation.MoveToPositionAnimator;
 import gov.nasa.worldwind.animation.AngleAnimator;
 import gov.nasa.worldwind.animation.RotateToAngleAnimator;
-
-import org.json.JSONObject;
-
-import com.github.sarxos.webcam.Webcam;
-import com.github.sarxos.webcam.WebcamPanel;
-import com.github.sarxos.webcam.WebcamResolution;
 
 
 public class AppFrame extends JFrame {
@@ -169,6 +153,7 @@ public class AppFrame extends JFrame {
         menubar.add(menuDrones);
 
 		this.setJMenuBar(menubar);
+ 		
     }
     
     private void initializeWW() {
@@ -262,18 +247,76 @@ public class AppFrame extends JFrame {
         RenderableLayer layer = new RenderableLayer();
         layer.setName("Curvas de nivel");
         layer.setPickEnabled(false);
-        layer.setMaxActiveAltitude(3000);
+        //layer.setMaxActiveAltitude(3000);
         
         this.wwd.getModel().getLayers().add(layer);
 
         //insertBeforeLayerName(this.wwd, layer, "Br�jula");
+        
+        int alturaMax = 2100;
+        int incremento = 25;
+        
+        List<Color> escalaColor = hacerEscalaColor(alturaMax, incremento);
+        int i = 0;
 
-        for (int elevation = 0; elevation <= 3000; elevation += 25) {
+        for (int elevation = 0; elevation <= alturaMax; elevation += incremento) {
             ContourLine cl = new ContourLine(elevation);
-            cl.setColor(new Color(1f, 1f, 1f));
-
+            cl.setColor(escalaColor.get(i));
             layer.addRenderable(cl);
+            i++;
         }
+    }
+    
+    private List<Color> hacerEscalaColor(int alturaMax, int incremento) {
+    	List<Color> escalaColor = new ArrayList<>();
+    	float verde = 0;
+    	float rojo = 0;
+    	float azul = 255;
+    	float paso = 255 / ((alturaMax/incremento) / 5);
+    	
+    	while (verde < 255) {
+    		verde += paso;
+    		if (verde > 255) { 
+    			verde = 255; 
+    		}
+    		escalaColor.add(new Color(rojo/255,verde/255,azul/255));
+    	}
+    	
+    	while (azul > 0) {
+    		azul -= paso;
+    		if (azul < 0) { 
+    			azul = 0; 
+    		}
+    		escalaColor.add(new Color(rojo/255,verde/255,azul/255));
+    	}
+    	
+    	while (rojo < 255) {
+    		rojo += paso;
+    		if (rojo > 255) { 
+    			rojo = 255; 
+    		}
+    		escalaColor.add(new Color(rojo/255,verde/255,azul/255));
+    	}
+    	
+    	while (verde > 0) {
+    		verde -= paso;
+    		if (verde < 0) { 
+    			verde = 0; 
+    		}
+    		escalaColor.add(new Color(rojo/255,verde/255,azul/255));
+    	}
+    	
+    	while (verde < 255 && azul < 255) {
+    		verde += paso;
+    		azul += paso;
+    		if (verde > 255 || azul > 255) { 
+    			verde = 255; 
+    			azul = 255;
+    		}
+    		escalaColor.add(new Color(rojo/255,verde/255,azul/255));
+    	}
+    	
+    	return escalaColor;
     }
     
     private JPanel panelTransparencia() {

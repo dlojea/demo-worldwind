@@ -8,6 +8,8 @@ public class Demo {
     public static void main(String[] args) {
     	Configuration.setValue(AVKey.INITIAL_LATITUDE, 42.29);
         Configuration.setValue(AVKey.INITIAL_LONGITUDE, -8.7376);
+        //Configuration.setValue(AVKey.INITIAL_LATITUDE, 42.24);
+        //Configuration.setValue(AVKey.INITIAL_LONGITUDE, -6.79);
         Configuration.setValue(AVKey.INITIAL_ALTITUDE, 2500);
         Configuration.setValue(AVKey.INITIAL_PITCH, 45);
     	
