@@ -30,7 +30,7 @@ public class TimerTaskGetData extends TimerTask{
 			String jsonString = new String(data, StandardCharsets.UTF_8);//.replace("\\u00f3", "�");
 			//jsonString = jsonString.substring(1, jsonString.length()-2);
 	
-			//System.out.println(jsonString);
+			System.out.println(jsonString);
 	
 			JSONObject json = new JSONObject(jsonString);
 	
@@ -51,7 +51,7 @@ public class TimerTaskGetData extends TimerTask{
 	
 			Vista v = new Vista(json, this.appFrame.getPosicionCamara());
 
-	 		appFrame.updateView(v);
+			appFrame.updateView(v);
 
 	    } catch (Exception exception) {
 			System.out.println("\nERROR: " + exception.getMessage());

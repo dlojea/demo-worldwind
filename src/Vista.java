@@ -12,7 +12,7 @@ public class Vista {
  		private Angle roll; //rotacion
  		
  		private double posicionCamara;
- 		
+
  		public Vista(Position position, Angle yaw, Angle pitch, Angle roll, double posicionCamara) {
  			this.position = position; 
  			this.yaw = yaw;
@@ -63,4 +63,8 @@ public class Vista {
  		public Angle getRoll() {
  			return roll;
  		}
+
+		public void setPosicionCamara(double posicionCamara) {
+			this.posicionCamara = posicionCamara;
+		}
  	}
