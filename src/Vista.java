@@ -34,7 +34,7 @@ public class Vista {
  	    	this.pitch = Angle.fromRadians(Double.parseDouble(pitch) + Math.toRadians(this.posicionCamara));
  	    	this.roll = Angle.fromRadians(Double.parseDouble(roll));
  	    	
- 	    	String lsg = json.getString("Localizacion Sistema Global");
+ 	    	String lsg = json.getString("Localización Sistema Global");
  	    	String[] lsgArray = lsg.split(",");
  	    	String latitud = lsgArray[0].split("=")[1];
  	    	String longitud = lsgArray[1].split("=")[1];

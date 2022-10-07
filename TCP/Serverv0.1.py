@@ -21,7 +21,7 @@ class RequestHandler (BaseRequestHandler):
 
             if not pt.empty:
             	rec = pt.to_json(orient = 'records')
-            	message = json.dumps(json.JSONDecoder().decode(rec))
+            	message = json.dumps(json.JSONDecoder().decode(rec)[-1])
             	print('Mesage:')
             	print(message)
    

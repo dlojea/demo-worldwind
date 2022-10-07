@@ -24,12 +24,14 @@ import gov.nasa.worldwind.BasicModel;
 import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.awt.WorldWindowGLJPanel;
+import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.layers.CompassLayer;
 import gov.nasa.worldwind.layers.Layer;
 import gov.nasa.worldwind.layers.LayerList;
 import gov.nasa.worldwind.layers.RenderableLayer;
 import gov.nasa.worldwind.layers.placename.PlaceNameLayer;
 import gov.nasa.worldwind.render.ContourLine;
+import gov.nasa.worldwind.render.GlobeAnnotation;
 import gov.nasa.worldwind.util.StatusBar;
 import gov.nasa.worldwind.view.firstperson.BasicFlyView;
 import gov.nasa.worldwind.view.firstperson.FlyToFlyViewAnimator;
@@ -55,6 +57,8 @@ public class AppFrame extends JFrame {
     private double posicionCamara;
     private int socket = 20064;
     private Timer timer;
+    
+    private boolean firstUpdateView = true;
 
     //public JSONObject 
 
@@ -107,7 +111,7 @@ public class AppFrame extends JFrame {
 		menubar.add(menuCapas);
 		
 		JMenu menuOpciones = new JMenu("Opciones");
-		JMenuItem itemAngulo = new JMenuItem("Cambiar �ngulo de la c�mara");
+		JMenuItem itemAngulo = new JMenuItem("Cambiar ángulo de la cámara");
 		menuOpciones.add(itemAngulo);
 		itemAngulo.addActionListener(new ActionListener() {
 	        @Override
@@ -192,6 +196,22 @@ public class AppFrame extends JFrame {
     
     public void updateView(Vista v) {
     	BasicFlyView view = (BasicFlyView) this.wwd.getView();
+    	
+    	if (firstUpdateView) {
+
+            //v.setPosicionCamara(this.posicionCamara);
+        
+            view.setEyePosition(v.getPosition());
+            view.setHeading(v.getYaw());
+            view.setPitch(v.getPitch());
+            view.setRoll(v.getRoll());
+
+            firstUpdateView = false;
+
+            this.wwd.redraw();
+
+            return;
+        }
     	
         /*
     	v.setPosicionCamara(this.posicionCamara);
