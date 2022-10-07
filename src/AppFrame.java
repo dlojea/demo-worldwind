@@ -41,6 +41,8 @@ import gov.nasa.worldwind.animation.Animator;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.Queue;
+import java.util.concurrent.LinkedBlockingQueue;
 import gov.nasa.worldwind.animation.MoveToDoubleAnimator;
 import gov.nasa.worldwind.animation.MoveToPositionAnimator;
 import gov.nasa.worldwind.animation.AngleAnimator;
@@ -57,13 +59,15 @@ public class AppFrame extends JFrame {
     private double posicionCamara;
     private int socket = 20064;
     private Timer timer;
+
+    private int imageDelayFrames = 1;
+    private Queue<Vista> viewBuffer;
     
     private boolean firstUpdateView = true;
 
-    //public JSONObject 
-
     public AppFrame() {
         this.posicionCamara = 0;
+        this.viewBuffer = new LinkedBlockingQueue<Vista>();
         this.initialize();
     }
 
@@ -124,8 +128,9 @@ public class AppFrame extends JFrame {
         
         JPanel panel = new JPanel();
 		panel.setBackground(new Color(0,0,0,.0f));
-		panel.setBounds(0,0,250,100);
+		panel.setBounds(0,0,250,250);
 		panel.add(this.panelTransparencia());
+        panel.add(this.panelSincronizacion());
 		
 		this.desktop.add(panel, JLayeredPane.MODAL_LAYER);
 
@@ -212,55 +217,56 @@ public class AppFrame extends JFrame {
 
             return;
         }
-    	
-        /*
-    	v.setPosicionCamara(this.posicionCamara);
-        
-        view.setEyePosition(v.getPosition());
-        view.setHeading(v.getYaw());
-        view.setPitch(v.getPitch());
-        view.setRoll(v.getRoll());
-        */
 
-        // SISTEMA DE INTERPOLACIÓN CON ANIMATOR
-        FlyToFlyViewAnimator animator =
-                        FlyToFlyViewAnimator.createFlyToFlyViewAnimator(view,
-                            view.getEyePosition(), v.getPosition(),
-                            view.getHeading(), v.getYaw(),
-                            view.getPitch(), v.getPitch(),
-                            view.getRoll(), v.getRoll(),
-                            view.getEyePosition().getElevation(), v.getPosition().getElevation(),
-                            500, WorldWind.ABSOLUTE);
-        
-        List<Animator> animators = new LinkedList<Animator>();
+        this.viewBuffer.add(v); //Almacenamos vista en buffer
 
-        for (Animator anim : animator.getAnimators()) {
-            if (anim instanceof FlyToFlyViewAnimator.FlyToElevationAnimator) {
-                FlyToFlyViewAnimator.FlyToElevationAnimator ftfAnim = (FlyToFlyViewAnimator.FlyToElevationAnimator) anim;
-                animators.add(new MoveToDoubleAnimator(ftfAnim.getEnd(), 0.998, ftfAnim.getPropertyAccessor()));
-            }
-            else if (anim instanceof FlyToFlyViewAnimator.OnSurfacePositionAnimator) { 
-                FlyToFlyViewAnimator.OnSurfacePositionAnimator ftfAnim = (FlyToFlyViewAnimator.OnSurfacePositionAnimator) anim;
-                animators.add(new MoveToPositionAnimator(ftfAnim.getBegin(), ftfAnim.getEnd(), 0.998, ftfAnim.getPropertyAccessor()));
-            }
-            else if (anim instanceof AngleAnimator) {
-                AngleAnimator ftfAnim = (AngleAnimator) anim;
-                animators.add(new RotateToAngleAnimator(ftfAnim.getBegin(), ftfAnim.getEnd(), 0.998, ftfAnim.getPropertyAccessor()));
-            }
-            else {
-                animators.add(anim);
-            }
+        while(this.viewBuffer.size() > this.imageDelayFrames) {
+            this.viewBuffer.remove();
         }
 
-        animator.setAnimators(animators.toArray(new Animator[animators.size()]));
+        if (this.viewBuffer.size() == this.imageDelayFrames) {
+            v = this.viewBuffer.remove();
 
-        view.addAnimator(animator);
-        animator.start();
-        view.firePropertyChange(AVKey.VIEW, null, view);
-        
-        mapFrame.updateMarker(v);
+            // SISTEMA DE INTERPOLACIÓN CON ANIMATOR
+            FlyToFlyViewAnimator animator =
+                            FlyToFlyViewAnimator.createFlyToFlyViewAnimator(view,
+                                view.getEyePosition(), v.getPosition(),
+                                view.getHeading(), v.getYaw(),
+                                view.getPitch(), v.getPitch(),
+                                view.getRoll(), v.getRoll(),
+                                view.getEyePosition().getElevation(), v.getPosition().getElevation(),
+                                500, WorldWind.ABSOLUTE);
+            
+            List<Animator> animators = new LinkedList<Animator>();
+    
+            for (Animator anim : animator.getAnimators()) {
+                if (anim instanceof FlyToFlyViewAnimator.FlyToElevationAnimator) {
+                    FlyToFlyViewAnimator.FlyToElevationAnimator ftfAnim = (FlyToFlyViewAnimator.FlyToElevationAnimator) anim;
+                    animators.add(new MoveToDoubleAnimator(ftfAnim.getEnd(), 0.998, ftfAnim.getPropertyAccessor()));
+                }
+                else if (anim instanceof FlyToFlyViewAnimator.OnSurfacePositionAnimator) { 
+                    FlyToFlyViewAnimator.OnSurfacePositionAnimator ftfAnim = (FlyToFlyViewAnimator.OnSurfacePositionAnimator) anim;
+                    animators.add(new MoveToPositionAnimator(ftfAnim.getBegin(), ftfAnim.getEnd(), 0.998, ftfAnim.getPropertyAccessor()));
+                }
+                else if (anim instanceof AngleAnimator) {
+                    AngleAnimator ftfAnim = (AngleAnimator) anim;
+                    animators.add(new RotateToAngleAnimator(ftfAnim.getBegin(), ftfAnim.getEnd(), 0.998, ftfAnim.getPropertyAccessor()));
+                }
+                else {
+                    animators.add(anim);
+                }
+            }
+    
+            animator.setAnimators(animators.toArray(new Animator[animators.size()]));
+    
+            view.addAnimator(animator);
+            animator.start();
+            view.firePropertyChange(AVKey.VIEW, null, view);
+            
+            mapFrame.updateMarker(v);
 
-        this.wwd.redraw();
+            this.wwd.redraw();
+        }
     }
     
     private void dibujarLineasDeNivel() {
@@ -357,6 +363,24 @@ public class AppFrame extends JFrame {
          controlPanel.add(slider);
          return controlPanel;
     }
+
+    private JPanel panelSincronizacion() {
+        JPanel controlPanel = new JPanel();
+        
+        TitledBorder tb = new TitledBorder("Sincronizar retardo imagen");
+        tb.setTitleColor(new Color(255,255,255));
+        controlPanel.setBorder(new CompoundBorder(BorderFactory.createEmptyBorder(9, 9, 9, 9), tb));
+        controlPanel.setBackground(new Color(0,0,0,.0f));
+        
+        JSlider slider = new JSlider(1, 10, 1);
+        slider.setBackground(getForeground()); 
+        slider.addChangeListener((ChangeEvent event) -> {
+           imageDelayFrames = (int) slider.getValue();
+        });
+        
+        controlPanel.add(slider);
+        return controlPanel;
+   }
     
     private void mostrarOpciones() {
     	JFrame frame = new OpcionesFrame(this);
