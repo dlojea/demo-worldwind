@@ -84,7 +84,7 @@ public class DroneServer {
 			LocalDateTime now = LocalDateTime.now();  
 			
 			JSONObject json = new JSONObject("{\r\n"
-		            + "        \"Actitud\": \"Attitude:pitch=45,yaw=" + angulo + ",roll=0\",\r\n"
+		            + "        \"Actitud\": \"Attitude:pitch=45,yaw=" + radbear + ",roll=0\",\r\n"
 	        	    + "        \"Elevacion\": \"" + altitud + "\",\r\n"
 	       	   	    + "        \"Localización Sistema Global\": \"LocationGlobal:lat=" + latitud + ",lon=" + longitud + ",alt=" + altitud + "\",\r\n"
                     + "        \"Tiempo\": \"" + now + "\"\r\n"
