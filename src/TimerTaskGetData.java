@@ -1,3 +1,5 @@
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.InputStream;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
@@ -10,13 +12,15 @@ public class TimerTaskGetData extends TimerTask{
 	double lat = 42.2905979;
 
 	Socket socket;
-	InputStream input;
+	DataInputStream input;
+	DataOutputStream output;
 
 	public TimerTaskGetData(AppFrame appFrame) {
 		try {
 			this.appFrame = appFrame;
 			this.socket = new Socket("localhost", appFrame.getSocket());
-			this.input = socket.getInputStream();
+			this.input = new DataInputStream(socket.getInputStream());
+			this.output = new DataOutputStream(socket.getOutputStream());
 		} catch (Exception e) {}
 	}
 
@@ -25,12 +29,18 @@ public class TimerTaskGetData extends TimerTask{
     	byte[] data = new byte[8192];
 
 		try {
-			this.input.read(data);
-	
-			String jsonString = new String(data, StandardCharsets.UTF_8);//.replace("\\u00f3", "�");
+			//this.input.readUTF(data);
+			System.out.println("ask socket for data");
+			this.output.writeUTF("GET DATA");
+
+			System.out.println("read socket");
+			//String jsonString = new String(data, StandardCharsets.UTF_8);//.replace("\\u00f3", "�");
+			String jsonString = this.input.readUTF();
 			//jsonString = jsonString.substring(1, jsonString.length()-2);
+
+			//jsonString = "{"+jsonString.split("\\{", 2)[1];
 	
-			//System.out.println(jsonString);
+			System.out.println(jsonString);
 	
 			JSONObject json = new JSONObject(jsonString);
 	
@@ -52,6 +62,8 @@ public class TimerTaskGetData extends TimerTask{
 			Vista v = new Vista(json, this.appFrame.getPosicionCamara());
 
 	 		appFrame.updateView(v);
+
+			System.out.println("updated");
 
 	    } catch (Exception exception) {
 			System.out.println("\nERROR: " + exception.getMessage());

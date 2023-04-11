@@ -29,7 +29,7 @@ public class DroneServer {
 	
 	public static void main(String[] args) {
 		
-        final int PUERTO = 5000;
+        final int PUERTO = 20064;
 		 
         ServerSocket servidor = null;
         Socket sc = null;
@@ -80,6 +80,7 @@ public class DroneServer {
 
 		long millisOffset = 0;
 
+		/*
 		while(true) {
 			long currentMillis = System.currentTimeMillis() - initialMillis;
 			System.out.print("[");
@@ -132,35 +133,81 @@ public class DroneServer {
 				Thread.currentThread().interrupt();
 			}	
 		}
+		*/
 
-		/*
-        try {
-        	ruta = hacerRuta(42.29, -8.79, 500, 0, 2000);
-		} catch (JSONException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-        
-        try {
+		try {
             servidor = new ServerSocket(PUERTO);
             System.out.println("Servidor iniciado");
+			sc = servidor.accept();
+			System.out.println("Connected to client...\n");
             
             while (true) {
-                sc = servidor.accept();
+				System.out.println("Waiting for client...\n");
                 out = new DataOutputStream(sc.getOutputStream());
         		in = new DataInputStream(sc.getInputStream());
+
+				in.readUTF();
+				System.out.println("Message from client received. \n");
         		
-        		int i = in.readInt();
+        		long currentMillis = System.currentTimeMillis() - initialMillis;
+				System.out.print("[");
+				System.out.print(currentMillis);
+				System.out.print(" ms since start]");
+				System.out.println("");
+
+				Map<String, Double> previousPosition = null;
+				Map<String, Double> nextPosition = null;
+
+				long correctedMillis = currentMillis - millisOffset;
+
+				for(Map<String, Double> position : positions) {
+					if (position.get("ms") <= correctedMillis) {
+						previousPosition = position;
+					}
+					else if (nextPosition == null) {
+						nextPosition = position;
+						break;
+					}
+				}
+
+				Map<String, Double> currentPosition = new HashMap<>();
+
+				if (nextPosition == null) {
+					millisOffset += correctedMillis;
+					currentPosition = previousPosition;
+				}
+				else {
+					double nextWeight = (correctedMillis - previousPosition.get("ms")) / (nextPosition.get("ms") - previousPosition.get("ms"));
+					double previousWeight = 1.0 - nextWeight;
+
+					currentPosition.put("ms", 0.0+currentMillis);
+
+					currentPosition.put("lat", previousWeight*previousPosition.get("lat") + nextWeight*nextPosition.get("lat"));
+					currentPosition.put("lon", previousWeight*previousPosition.get("lon") + nextWeight*nextPosition.get("lon"));
+					currentPosition.put("alt", previousWeight*previousPosition.get("alt") + nextWeight*nextPosition.get("alt"));
+
+					currentPosition.put("yaw", previousWeight*previousPosition.get("yaw") + nextWeight*nextPosition.get("yaw"));
+					currentPosition.put("pitch", previousWeight*previousPosition.get("pitch") + nextWeight*nextPosition.get("pitch"));
+					currentPosition.put("roll", previousWeight*previousPosition.get("roll") + nextWeight*nextPosition.get("roll"));
+				}
+
+
+				String json = " {\r\n"
+					            + "        \"Actitud\": \"Attitude:pitch="+currentPosition.get("pitch")+",yaw="+currentPosition.get("yaw")+",roll="+currentPosition.get("roll")+"\",\r\n"
+				        	    + "        \"Elevacion\": \"" + currentPosition.get("alt") + "\",\r\n"
+				       	   	    + "        \"Localización Sistema Global\": \"LocationGlobal:lat=" + currentPosition.get("lat") + ",lon=" + currentPosition.get("lon") + ",alt=" + currentPosition.get("alt") + "\",\r\n"
+				                + "        \"Tiempo\": \"" + currentPosition.get("ms") + "\"\r\n"
+				                + "}";
         		
-                System.out.println(ruta.get(i).toString());
-                out.writeUTF(ruta.get(i).toString());
-                i++;
-                
+				System.out.println();
+				System.out.println(json);
+				System.out.println();
+				out.writeUTF(json);
+				System.out.println("Data sent to client. \n");
             }
         } catch (IOException ex) {
             Logger.getLogger(DroneServer.class.getName()).log(Level.SEVERE, null, ex);
         }
- 		*/
     }
 	
 	// public static List<JSONObject> hacerRuta(double latitud, double longitud, double altitud, double angulo, double distancia) throws JSONException{
