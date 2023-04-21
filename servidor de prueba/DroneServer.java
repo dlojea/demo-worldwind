@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static java.lang.Math.*;
 
 public class DroneServer {
 
@@ -79,61 +80,6 @@ public class DroneServer {
 		long initialMillis = System.currentTimeMillis();
 
 		long millisOffset = 0;
-
-		/*
-		while(true) {
-			long currentMillis = System.currentTimeMillis() - initialMillis;
-			System.out.print("[");
-			System.out.print(currentMillis);
-			System.out.print(" ms since start]");
-			System.out.println("");
-
-			Map<String, Double> previousPosition = null;
-			Map<String, Double> nextPosition = null;
-
-			long correctedMillis = currentMillis - millisOffset;
-
-			for(Map<String, Double> position : positions) {
-				if (position.get("ms") <= correctedMillis) {
-					previousPosition = position;
-				}
-				else if (nextPosition == null) {
-					nextPosition = position;
-					break;
-				}
-			}
-
-			Map<String, Double> currentPosition = new HashMap<>();
-
-			if (nextPosition == null) {
-				millisOffset += correctedMillis;
-				currentPosition = previousPosition;
-			}
-			else {
-				double nextWeight = (correctedMillis - previousPosition.get("ms")) / (nextPosition.get("ms") - previousPosition.get("ms"));
-				double previousWeight = 1.0 - nextWeight;
-
-				currentPosition.put("ms", 0.0+currentMillis);
-
-				currentPosition.put("lat", previousWeight*previousPosition.get("lat") + nextWeight*nextPosition.get("lat"));
-				currentPosition.put("lon", previousWeight*previousPosition.get("lon") + nextWeight*nextPosition.get("lon"));
-				currentPosition.put("alt", previousWeight*previousPosition.get("alt") + nextWeight*nextPosition.get("alt"));
-
-				currentPosition.put("yaw", previousWeight*previousPosition.get("yaw") + nextWeight*nextPosition.get("yaw"));
-				currentPosition.put("pitch", previousWeight*previousPosition.get("pitch") + nextWeight*nextPosition.get("pitch"));
-				currentPosition.put("roll", previousWeight*previousPosition.get("roll") + nextWeight*nextPosition.get("roll"));
-			}
-
-			System.out.println(currentPosition);
-			System.out.println("");
-
-			try {
-				Thread.sleep(500);
-			} catch (InterruptedException ie) {
-				Thread.currentThread().interrupt();
-			}	
-		}
-		*/
 
 		try {
             servidor = new ServerSocket(PUERTO);
@@ -209,46 +155,4 @@ public class DroneServer {
             Logger.getLogger(DroneServer.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-	
-	// public static List<JSONObject> hacerRuta(double latitud, double longitud, double altitud, double angulo, double distancia) throws JSONException{
-	// 	List<JSONObject> listaCoordenadas = new ArrayList<>();
-		
-	// 	double R = 6371000; 
-	// 	double PI = 3.1415926535;
-	// 	double RADIANS = PI/180;
-	// 	double DEGREES = 180/PI;
-	// 	double radbear  = angulo * RADIANS;
-		
-	// 	double paso = 50; //distancia que avanza el dron con cada petición
-		
-	// 	for (int i = 0; i <= distancia; i += paso) {
-	// 		double lat2;
-	// 	    double lon2;
-
-	// 	    double lat1 = latitud * RADIANS;
-	// 	    double lon1 = longitud * RADIANS;
-		    
-	// 	    lat2 = Math.asin( Math.sin(lat1)*Math.cos(paso / R) +
-	// 	              Math.cos(lat1)*Math.sin(paso/R)*Math.cos(radbear) );
-	// 	    lon2 = lon1 + Math.atan2(Math.sin(radbear)*Math.sin(paso / R)*Math.cos(lat1),
-	// 	                     Math.cos(paso/R)-Math.sin(lat1)*Math.sin(lat2));
-		    
-	// 	    latitud = lat2 * DEGREES;
-	// 	    longitud = lon2 * DEGREES;
-		      
-	// 		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.S");  
-	// 		LocalDateTime now = LocalDateTime.now();  
-			
-	// 		JSONObject json = new JSONObject("{\r\n"
-	// 	            + "        \"Actitud\": \"Attitude:pitch=45,yaw=" + radbear + ",roll=0\",\r\n"
-	//         	    + "        \"Elevacion\": \"" + altitud + "\",\r\n"
-	//        	   	    + "        \"Localización Sistema Global\": \"LocationGlobal:lat=" + latitud + ",lon=" + longitud + ",alt=" + altitud + "\",\r\n"
-    //                 + "        \"Tiempo\": \"" + now + "\"\r\n"
-    //                 + "    }");
-	// 		listaCoordenadas.add(json);
-	// 	}
-		
-	// 	return listaCoordenadas;
-		
-	// }
 }
